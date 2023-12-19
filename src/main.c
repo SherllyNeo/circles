@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
+#include <string.h>
 //#define SCREEN_WIDTH 900
 #define SCREEN_WIDTH 700
-#define SCREEN_HEIGHT 600
+#define SCREEN_HEIGHT 483
 #define RADIUS 30
 #define INITACC 0.01
 #define INITSPEED 1.2
 #define TOPSPEED 30
+#define BallsLim 50
 
 typedef struct {
     int x;
@@ -29,6 +31,7 @@ void DrawCircleStruct(DCircle c) {
 int main()
 {
     //    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    int more = 0;
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bilo"); SetTargetFPS(130);
     InitAudioDevice();
@@ -60,7 +63,7 @@ int main()
     DCircle Circle6 = {RADIUS*2, RADIUS*11,RADIUS, SKYBLUE,SKYBLUE,INITSPEED*6,INITACC,0,F};
     DCircle Circle7 = {RADIUS*2, RADIUS*13,RADIUS, BLUE,BLUE,INITSPEED*7,INITACC,0,G};
     DCircle Circle8 = {RADIUS*2, RADIUS*15,RADIUS, PURPLE,PURPLE,INITSPEED*8,INITACC,0,H};
-    DCircle *Circles[9] = {&Circle1,&Circle2,&Circle3,&Circle4,&Circle5,&Circle6,&Circle7,&Circle8};
+    DCircle *Circles[BallsLim] = {&Circle1,&Circle2,&Circle3,&Circle4,&Circle5,&Circle6,&Circle7,&Circle8};
     int AmountOfCircles = 8;
 
     while (!WindowShouldClose()) {
@@ -80,13 +83,28 @@ int main()
                 circleX->speedx = -(circleX->speedx);
                 circleX->accelx = -(circleX->accelx);
                 circleX -> colour = WHITE;
+                DCircle TmpNewCircle;
+
                 if ((circleX->x - circleX->radius) < 0) {
                     circleX->x = circleX->radius + 2;
+                    if (more) {
+                        TmpNewCircle = (DCircle){GetScreenWidth() - (circleX->radius + 2), circleX->y,circleX->radius,circleX->DefColour,circleX->DefColour,circleX->speedx,circleX->accelx,circleX->count, circleX->sound};
+                    }
                 }
+
                 if ((circleX->x + circleX->radius) > GetScreenWidth()) {
                     circleX->x = GetScreenWidth() - (circleX->radius + 2);
+                    if (more) {
+                        TmpNewCircle = (DCircle){(circleX->radius + 2), circleX->y,RADIUS, circleX->DefColour,circleX->DefColour,INITSPEED*8,INITACC,circleX->count,circleX->sound};
+                    }
                 }
-           PlaySound(circleX->sound);
+                PlaySound(circleX->sound);
+                if (more) {
+                    DCircle *NewCircle = malloc(sizeof(DCircle));
+                    memcpy(NewCircle, &TmpNewCircle, sizeof(DCircle));
+                    Circles[AmountOfCircles++] = NewCircle;
+                }
+
             }
             circleX -> count += 1;
             DrawCircleStruct(*circleX);
